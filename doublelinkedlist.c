@@ -1,190 +1,111 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
-struct node {
-   int data;
-   struct node *next;
-   struct node *prev;
+
+struct Node {
+    int data;
+    struct Node* prev;
+    struct Node* next;
 };
-struct node *head = NULL;
-struct node *last = NULL;
-struct node *current = NULL;
-bool isEmpty() {
-   return head == NULL;
-}
-int length() {
-   int length = 0;
-   struct node *current;
-   for(current = head; current != NULL; current = current->next){
-      length++;
-   }
-   return length;
-}
-void displayForward() 
-{
-   struct node *ptr = head;
-   while(ptr != NULL) 
-   {        
-      printf("\n%d",ptr->data);
-      ptr = ptr->next;
-   }
-}
-void displayBackward() {
-   struct node *ptr = last;
-    while(ptr != NULL) {    
-      printf("\n%d",ptr->data);
-      ptr = ptr ->prev;
-   }
-}
-void insertFirst(int data) 
-{
-   struct node *link = (struct node*) malloc(sizeof(struct node));
-   link->data = data;
-   if(isEmpty()) {
-      last = link;
-   } else {
-      head->prev = link;
-   }
-   link->next = head;
-   head = link;
-}
-void insertLast(int data) 
-{
-   struct node *link = (struct node*) malloc(sizeof(struct node));
-   link->data = data;
-   link->next=NULL;
-   if(isEmpty()) {
-     last = link;
-   } else {
-      last->next = link;     
-      link->prev = last;
-   }
-      last = link;
+
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->prev = NULL;
+    newNode->next = NULL;
+    return newNode;
 }
 
-void deleteFirst() {
-   struct node *tempLink = head;
-   if(head->next == NULL){
-      last = NULL;
-   } else {
-      head->next->prev = NULL;
-   }
-   head = head->next;
- }
-void deleteLast() {
-   struct node *tempLink = last;
-   if(head->next == NULL) {
-      head = NULL;
-   } else {
-      last->prev->next = NULL;
-   }
-   last = last->prev;
- }
-struct node* delete(int key) {
-   struct node* current = head;
-   struct node* previous = NULL;
-   if(head == NULL) {
-      return NULL;
-   }
-   while(current->data != key) {
-
-      if(current->next == NULL) {
-         return NULL;
-      } else {
-         previous = current;
-         current = current->next;             
-      }
-   }
-   if(current == head) {
-      head = head->next;
-   } else {
-      current->prev->next = current->next;
-   }    
-   if(current == last) {
-      last = current->prev;
-   } else {
-      current->next->prev = current->prev;
-   }
-   return current;
+void insertAtBegin(struct Node** head, int data) {
+    struct Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+    newNode->next = *head;
+    (*head)->prev = newNode;
+    *head = newNode;
 }
 
-void insertAfter(int key,int data) {
-   struct node *current = head; 
-   if(head == NULL) {
-printf("empty");
-      return;
-   }
-   while(current->data != key) {
-	if(current->next == NULL) {
-         return;
-      } else {           
-         current = current->next;
-      }
-   }
-   struct node *newLink = (struct node*) malloc(sizeof(struct node));
-   newLink->data = data;
+void insertAtEnd(struct Node** head, int data) {
+    struct Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+    struct Node* current = *head;
+    while (current->next != NULL) {
+        current = current->next;
+    }
+    current->next = newNode;
+    newNode->prev = current;
+}
 
-   if(current == last) {
-      newLink->next = NULL; 
-      last = newLink; 
-   } else {
-      newLink->next = current->next;         
-      current->next->prev = newLink;
-   }
-	
-   newLink->prev = current; 
-   current->next = newLink; 
- }
+void insertAtPosition(struct Node** head, int data, int position) {
+    if (position <= 0) {
+        printf("Invalid position.\n");
+        return;
+    }
+    if (position == 1) {
+        insertAtBegin(head, data);
+        return;
+    }
+    struct Node* newNode = createNode(data);
+    struct Node* current = *head;
+    for (int i = 1; i < position - 1 && current != NULL; i++) {
+        current = current->next;
+    }
+    if (current == NULL) {
+        printf("Position out of range.\n");
+        return;
+    }
+    newNode->prev = current;
+    newNode->next = current->next;
+    if (current->next != NULL) {
+        current->next->prev = newNode;
+    }
+    current->next = newNode;
+}
 
-void main() 
-{
-    int choice =0,i,j;
-    while(1)   
-    {  
-       printf("\n0.insertafter\n1.insertFirst\n2.insertLast\n3.deleteLast\n4.Deletefirst\n5.delete\n6.display    
-       Forward\n7.displayBackward\n8.exit");  
-        printf("\nEnter your choice?\n");         
-        scanf("%d",&choice);  
-        switch(choice)  
-        {  
-            case 0:  
-            printf("enter key and data");
-            scanf("%d%d",&i,&j);
-            insertAfter(i,j);      
-            break;
+void deleteAtBegin(struct Node** head) {
+    if (*head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    struct Node* temp = *head;
+    *head = (*head)->next;
+    if (*head != NULL) {
+        (*head)->prev = NULL;
+    }
+    free(temp);
+}
 
-	    case 1:  
-            printf("enter data");
-            scanf("%d",&i);
-            insertFirst(i);      
-            break;  
-              
-            case 2:  
-            printf("enter data");
-            scanf("%d",&i);
-            insertLast(i);      
-            break; 
- 
-            case 3: 
-		deleteLast();
-            break;  
-            case 4:  
-            	deleteFirst();        
-            break;  
-            case 5: 
-		printf("enter element to be deleted");
-		scanf("%d",&i); 
-            	delete(i);
-            break;  
-            case 6: displayForward();
-		break;
-	    case 7:displayBackward();
-		break;
-	    case 8:exit(0);
-	     default: 
-            printf("Please enter valid choice..");  
-        }  
-    }  
-}  
+void display(struct Node* head) {
+    struct Node* current = head;
+    while (current != NULL) {
+        printf("%d <-> ", current->data);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
 
+int main() {
+    struct Node* head = NULL;
+
+    insertAtBegin(&head, 3);
+    insertAtBegin(&head, 2);
+    insertAtBegin(&head, 1);
+    display(head);
+
+    insertAtEnd(&head, 4);
+    insertAtEnd(&head, 5);
+    display(head);
+
+    insertAtPosition(&head, 6, 3);
+    insertAtPosition(&head, 7, 6);
+    display(head);
+
+    deleteAtBegin(&head);
+    display(head);
+
+    return 0;
+}
